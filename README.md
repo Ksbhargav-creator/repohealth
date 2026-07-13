@@ -1,1 +1,2 @@
 # repohealth
+A Go CLI that audits a set of GitHub repos (yours, or a small org) for health signals platform teams actually care about: missing CI, no README/LICENSE, stale branches, PRs open too long, missing branch protection, etc. It outputs a readable report, and later in the build you'll pipe that report's history into a DynamoDB table via a small Terraform stack - giving you a real (if small) full-stack platform-engineering story: CLI -> automation -> IaC -> data storage.
