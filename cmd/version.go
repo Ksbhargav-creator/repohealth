@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Subcommand of root
 const version = "0.1.0-dev"
 
 var versionCmd = &cobra.Command{
