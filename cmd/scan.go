@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Ksbhargav-creator/repohealth/internal/checks"
 	"github.com/Ksbhargav-creator/repohealth/internal/repogh"
 	"github.com/spf13/cobra"
 )
 
+// Subcommand that lets you scan your repo
+// Currently lets you export all of your repo names
 var scanCmd = &cobra.Command{
 	Use:   "scan",
 	Short: "Scan repos for health signals",
@@ -27,6 +30,15 @@ var scanCmd = &cobra.Command{
 
 		for _, r := range repos {
 			fmt.Println(r.GetName())
+			okCI, _ := checks.HasCI(context.Background(), client, r.GetOwner().GetLogin(), r.GetName())
+			okReadme, _ := checks.HasReadme(context.Background(), client, r.GetOwner().GetLogin(), r.GetName())
+			okLicense, _ := checks.HasLicense(context.Background(), client, r.GetOwner().GetLogin(), r.GetName())
+
+			if okCI && okReadme && okLicense {
+				fmt.Println("It has CI workflows")
+			} else {
+				fmt.Println("It does not have CI workflows")
+			}
 		}
 	},
 }
