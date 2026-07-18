@@ -9,12 +9,12 @@ import (
 )
 
 type RepoReport struct {
-	Name          string
-	HasCI         bool
-	HasReadme     bool
-	HasLicense    bool
-	StaleBranches []string
-	Score         float64
+	Name          string   `json:"name"`
+	HasCI         bool     `json:"has_ci"`
+	HasReadme     bool     `json:"has_readme"`
+	HasLicense    bool     `json:"has_license"`
+	StaleBranches []string `json:"stale_branches"`
+	Score         float64  `json:"score"`
 }
 
 func Generate(ctx context.Context, client *github.Client, owner, repo string) (*RepoReport, error) {
