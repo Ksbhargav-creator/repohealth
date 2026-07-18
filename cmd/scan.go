@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Ksbhargav-creator/repohealth/internal/checks"
 	"github.com/Ksbhargav-creator/repohealth/internal/repogh"
+	"github.com/Ksbhargav-creator/repohealth/internal/report"
 	"github.com/spf13/cobra"
 )
 
@@ -30,15 +30,13 @@ var scanCmd = &cobra.Command{
 
 		for _, r := range repos {
 			fmt.Println(r.GetName())
-			okCI, _ := checks.HasCI(context.Background(), client, r.GetOwner().GetLogin(), r.GetName())
-			okReadme, _ := checks.HasReadme(context.Background(), client, r.GetOwner().GetLogin(), r.GetName())
-			okLicense, _ := checks.HasLicense(context.Background(), client, r.GetOwner().GetLogin(), r.GetName())
 
-			if okCI && okReadme && okLicense {
-				fmt.Println("It has CI workflows")
-			} else {
-				fmt.Println("It does not have CI workflows")
+			report, err := report.Generate(context.Background(), client, r.GetOwner().GetLogin(), r.GetName())
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
 			}
+			fmt.Println(report)
 		}
 	},
 }
