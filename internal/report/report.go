@@ -46,7 +46,7 @@ func Generate(ctx context.Context, client *github.Client, owner, repo string) (*
 	if license {
 		passed++
 	}
-	if len(stale) > 0 {
+	if !(len(stale) > 0) {
 		passed++
 	}
 

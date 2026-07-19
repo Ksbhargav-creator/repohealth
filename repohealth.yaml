@@ -1,0 +1,10 @@
+repos:
+  - owner: Ksbhargav-creator
+    name:  repohealth
+orgs:
+    - some-org
+checks:
+  ci: true
+  readme: true
+  license: true
+  stale_branches: false

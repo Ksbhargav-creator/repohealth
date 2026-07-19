@@ -18,6 +18,7 @@ var scanCmd = &cobra.Command{
 	Use:   "scan",
 	Short: "Scan repos for health signals",
 	Run: func(cmd *cobra.Command, args []string) {
+		config.Load(configPath)
 		client, err := repogh.NewClient()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -56,6 +57,14 @@ var scanCmd = &cobra.Command{
 			os.Exit(1)
 		}
 	},
+}
+
+func ListOrgRepos(ctx context.Context, client *github.Client, org string) ([]*github.Repository, error) {
+	repos, _, err := client.Repositories.ListByOrg(ctx, org, nil)
+	if err != nil {
+		return nil, fmt.Errorf("listing org repos: %w", err)
+	}
+	return repos, nil
 }
 
 func init() {
