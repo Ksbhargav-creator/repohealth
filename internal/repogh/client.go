@@ -26,3 +26,12 @@ func ListMyRepos(ctx context.Context, client *github.Client) ([]*github.Reposito
 	}
 	return repos, nil
 }
+
+// ListOrgRepos returns the org repositories
+func ListOrgRepos(ctx context.Context, client *github.Client, org string) ([]*github.Repository, error) {
+	repos, _, err := client.Repositories.ListByOrg(ctx, org, nil)
+	if err != nil {
+		return nil, fmt.Errorf("listing org repos: %w", err)
+	}
+	return repos, nil
+}

@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Ksbhargav-creator/repohealth/internal/config"
 	"github.com/Ksbhargav-creator/repohealth/internal/repogh"
 	"github.com/Ksbhargav-creator/repohealth/internal/report"
 	"github.com/spf13/cobra"
 )
 
 var format string
+var configPath string
 
 // Subcommand that scans your repos and prints a health report,
 // either as a table (default) or as JSON via --format json.
@@ -18,22 +20,38 @@ var scanCmd = &cobra.Command{
 	Use:   "scan",
 	Short: "Scan repos for health signals",
 	Run: func(cmd *cobra.Command, args []string) {
-		config.Load(configPath)
+		cfg, err := config.Load(configPath)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
 		client, err := repogh.NewClient()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
 
-		repos, err := repogh.ListMyRepos(context.Background(), client)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+		var targets []config.RepoRef
+
+		if len(cfg.Repos) > 0 || len(cfg.Orgs) > 0 {
+			targets = append(targets, cfg.Repos...)
+
+			for _, org := range cfg.Orgs {
+				orgRepos, err := repogh.ListOrgRepos(context.Background(), client, org)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err)
+					os.Exit(1)
+				}
+				for _, r := range orgRepos {
+					targets = append(targets, config.RepoRef{Owner: r.GetOwner().GetLogin(), Name: r.GetName()})
+				}
+			}
 		}
 
 		var reports []*report.RepoReport
-		for _, r := range repos {
-			rep, err := report.Generate(context.Background(), client, r.GetOwner().GetLogin(), r.GetName())
+		for _, t := range targets {
+			rep, err := report.Generate(context.Background(), client, t.Owner, t.Name)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				os.Exit(1)
@@ -59,15 +77,8 @@ var scanCmd = &cobra.Command{
 	},
 }
 
-func ListOrgRepos(ctx context.Context, client *github.Client, org string) ([]*github.Repository, error) {
-	repos, _, err := client.Repositories.ListByOrg(ctx, org, nil)
-	if err != nil {
-		return nil, fmt.Errorf("listing org repos: %w", err)
-	}
-	return repos, nil
-}
-
 func init() {
 	rootCmd.AddCommand(scanCmd)
 	scanCmd.Flags().StringVar(&format, "format", "table", "output format: table or json")
+	scanCmd.Flags().StringVar(&configPath, "config", "repohealth.yaml", "path to config file")
 }
