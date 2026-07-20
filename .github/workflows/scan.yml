@@ -1,0 +1,37 @@
+name: Scheduled Health Scan
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC.
+    - cron: '0 6 * * 1'
+  workflow_dispatch: {}
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - name: Run repohealth scan
+        env:
+          # The default Actions token is scoped to this repo only. It's
+          # enough for the explicit "repos:" entries in repohealth.yaml,
+          # but NOT enough to list an org's repos or another user's repos
+          # (see the "orgs:" section of repohealth.yaml). If you keep an
+          # orgs: entry, replace this with a personal access token stored
+          # as a repo secret (Settings > Secrets and variables > Actions),
+          # e.g. GITHUB_TOKEN: ${{ secrets.REPOHEALTH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: go run . scan --format json > report.json
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repohealth-report
+          path: report.json
