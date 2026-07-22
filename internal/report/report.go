@@ -14,6 +14,7 @@ type RepoReport struct {
 	HasReadme     bool     `json:"has_readme"`
 	HasLicense    bool     `json:"has_license"`
 	StaleBranches []string `json:"stale_branches"`
+	StalePRs      []string `json:"stalePRs"`
 	Score         float64  `json:"score"`
 }
 
@@ -30,7 +31,11 @@ func Generate(ctx context.Context, client *github.Client, owner, repo string) (*
 	if err != nil {
 		return nil, err
 	}
-	stale, err := checks.StaleBranches(ctx, client, owner, repo, 90*24*time.Hour)
+	stale_branches, err := checks.StaleBranches(ctx, client, owner, repo, 90*24*time.Hour)
+	if err != nil {
+		return nil, err
+	}
+	stale_PRs, err := checks.StalePRs(ctx, client, owner, repo, 90*24*time.Hour)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +51,10 @@ func Generate(ctx context.Context, client *github.Client, owner, repo string) (*
 	if license {
 		passed++
 	}
-	if !(len(stale) > 0) {
+	if !(len(stale_branches) > 0) {
+		passed++
+	}
+	if !(len(stale_PRs) > 0) {
 		passed++
 	}
 
@@ -56,6 +64,7 @@ func Generate(ctx context.Context, client *github.Client, owner, repo string) (*
 		HasReadme:     readme,
 		HasLicense:    license,
 		StaleBranches: stale,
+		StalePRs:      stale,
 		Score:         float64(passed) / float64(total),
 	}, nil
 }

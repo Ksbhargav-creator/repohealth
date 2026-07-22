@@ -21,6 +21,7 @@ func WriteTable(w io.Writer, reports []*RepoReport) error {
 			yesNo(r.HasReadme),
 			yesNo(r.HasLicense),
 			len(r.StaleBranches),
+			len(r.StalePRs),
 			r.Score*100,
 		)
 	}

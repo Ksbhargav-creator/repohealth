@@ -1,8 +1,6 @@
 repos:
   - owner: Ksbhargav-creator
     name:  repohealth
-orgs:
-    - some-org
 checks:
   ci: true
   readme: true
