@@ -54,7 +54,7 @@ var scanCmd = &cobra.Command{
 				os.Exit(1)
 			}
 			for _, r := range myRepos {
-				targets = append(targets, config.Reporef{Owner: r.GetOwner().GetLogin(), Name: r.GetName()})
+				targets = append(targets, config.RepoRef{Owner: r.GetOwner().GetLogin(), Name: r.GetName()})
 			}
 		}
 
