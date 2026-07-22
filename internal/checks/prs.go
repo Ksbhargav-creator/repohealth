@@ -1,11 +1,13 @@
 package checks
 
 import (
-	"Context"
+	"context"
+	"time"
+
 	"github.com/google/go-github/v66/github"
 )
 
-func StalePRs(ctx context.Contex, client *github.Client, owner, repo string, maxAge time.Duration) ([]string, error) {
+func StalePRs(ctx context.Context, client *github.Client, owner, repo string, maxAge time.Duration) ([]string, error) {
 	opts := &github.PullRequestListOptions{State: "open"}
 	prs, _, err := client.PullRequests.List(ctx, owner, repo, opts)
 	if err != nil {

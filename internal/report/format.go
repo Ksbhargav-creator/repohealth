@@ -13,9 +13,9 @@ import (
 func WriteTable(w io.Writer, reports []*RepoReport) error {
 	tw := tabwriter.NewWriter(w, 0, 4, 2, ' ', 0)
 
-	fmt.Fprintln(tw, "REPO\tCI\tREADME\tLICENSE\tSTALE BRANCHES\tSCORE")
+	fmt.Fprintln(tw, "REPO\tCI\tREADME\tLICENSE\tSTALE BRANCHES\tSTALE PRS\tSCORE")
 	for _, r := range reports {
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%d\t%.0f%%\n",
+		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%d\t%d\t%.0f%%\n",
 			r.Name,
 			yesNo(r.HasCI),
 			yesNo(r.HasReadme),
