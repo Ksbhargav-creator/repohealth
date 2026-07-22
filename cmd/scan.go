@@ -47,6 +47,15 @@ var scanCmd = &cobra.Command{
 					targets = append(targets, config.RepoRef{Owner: r.GetOwner().GetLogin(), Name: r.GetName()})
 				}
 			}
+		} else {
+			myRepos, err := repogh.ListMyRepos(context.Background(), client)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+			for _, r := range myRepos {
+				targets = append(targets, config.Reporef{Owner: r.GetOwner().GetLogin(), Name: r.GetName()})
+			}
 		}
 
 		var reports []*report.RepoReport
