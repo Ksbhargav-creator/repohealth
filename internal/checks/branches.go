@@ -8,15 +8,26 @@ import (
 )
 
 func StaleBranches(ctx context.Context, client *github.Client, owner, repo string, maxAge time.Duration) ([]string, error) {
-	branches, _, err := client.Repositories.ListBranches(ctx, owner, repo, nil)
-	if err != nil {
-		return nil, err
+	opts := &github.BranchListOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
+	var all_branches []*github.Branch
+	for {
+		branches, resp, err := client.Repositories.ListBranches(ctx, owner, repo, opts)
+		if err != nil {
+			return nil, err
+		}
+		all_branches = append(all_branches, branches...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
 	}
 
 	var stale []string
 	cutoff := time.Now().Add(-maxAge)
 
-	for _, b := range branches {
+	for _, b := range all_branches {
 		commit, _, err := client.Repositories.GetCommit(ctx, owner, repo, b.GetCommit().GetSHA(), nil)
 		if err != nil {
 			return nil, err

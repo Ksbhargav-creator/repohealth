@@ -8,16 +8,27 @@ import (
 )
 
 func StalePRs(ctx context.Context, client *github.Client, owner, repo string, maxAge time.Duration) ([]string, error) {
-	opts := &github.PullRequestListOptions{State: "open"}
-	prs, _, err := client.PullRequests.List(ctx, owner, repo, opts)
-	if err != nil {
-		return nil, err
+	opts := &github.PullRequestListOptions{
+		State:       "open",
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
+	var all_prs []*github.PullRequest
+	for {
+		prs, resp, err := client.PullRequests.List(ctx, owner, repo, opts)
+		if err != nil {
+			return nil, err
+		}
+		all_prs = append(all_prs, prs...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
 	}
 
 	var stale []string
 	cutoff := time.Now().Add(-maxAge)
 
-	for _, pr := range prs {
+	for _, pr := range all_prs {
 		if pr.GetCreatedAt().Before(cutoff) {
 			stale = append(stale, pr.GetTitle())
 		}

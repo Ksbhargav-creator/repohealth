@@ -20,18 +20,43 @@ func NewClient() (*github.Client, error) {
 
 // ListMyRepos returns the authenticated user's repositories
 func ListMyRepos(ctx context.Context, client *github.Client) ([]*github.Repository, error) {
-	repos, _, err := client.Repositories.ListByAuthenticatedUser(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("listing repos: %w", err)
+	//Pagination error handling
+	opts := &github.RepositoryListByAuthenticatedUserOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
 	}
-	return repos, nil
+	var all_repos []*github.Repository
+	for {
+		repos, resp, err := client.Repositories.ListByAuthenticatedUser(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+		all_repos = append(all_repos, repos...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
+	}
+
+	return all_repos, nil
 }
 
 // ListOrgRepos returns the org repositories
 func ListOrgRepos(ctx context.Context, client *github.Client, org string) ([]*github.Repository, error) {
-	repos, _, err := client.Repositories.ListByOrg(ctx, org, nil)
-	if err != nil {
-		return nil, fmt.Errorf("listing org repos: %w", err)
+	opts := &github.RepositoryListByOrgOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
 	}
-	return repos, nil
+	var all_repos []*github.Repository
+	for {
+		repos, resp, err := client.Repositories.ListByOrg(ctx, org, opts)
+		if err != nil {
+			return nil, err
+		}
+		all_repos = append(all_repos, repos...)
+		if resp.NextPage == 0 {
+			break
+		}
+		opts.Page = resp.NextPage
+	}
+
+	return all_repos, nil
 }
