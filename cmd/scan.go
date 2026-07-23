@@ -51,7 +51,7 @@ var scanCmd = &cobra.Command{
 						os.Exit(1)
 					} else if errors.As(err, &errResp) && errResp.Response.StatusCode == http.StatusNotFound {
 						//404 not found error handling
-						fmt.Fprintln(os.Stderr, "Skipping org %s: inaccessible", org)
+						fmt.Fprintf(os.Stderr, "Skipping org %s: inaccessible", org)
 						continue
 					} else {
 						fmt.Fprintln(os.Stderr, err)
@@ -66,7 +66,6 @@ var scanCmd = &cobra.Command{
 			myRepos, err := repogh.ListMyRepos(context.Background(), client)
 			if err != nil {
 				var rateErr *github.RateLimitError
-				var errResp *github.ErrorResponse
 				if errors.As(err, &rateErr) {
 					//Github API rate limiting error handling
 					fmt.Fprintf(os.Stderr, "rate limit hit, resets at %s\n", rateErr.Rate.Reset.Time)
